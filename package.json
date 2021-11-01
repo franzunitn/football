@@ -1,0 +1,14 @@
+{
+  "name": "football",
+  "version": "1.0.0",
+  "description": "football restful api",
+  "main": "index.js",
+  "scripts": {
+    "test": "tsc && node app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
