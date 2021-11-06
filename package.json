@@ -1,14 +1,26 @@
 {
   "name": "football",
   "version": "1.0.0",
-  "description": "football restful api",
-  "main": "index.js",
+  "description": "",
+  "main": "init_datasource.js",
   "scripts": {
-    "test": "tsc && node app.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://sfranchini: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@github.com/franzunitn/football.git"
+  },
+  "keywords": [],
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/franzunitn/football/issues"
+  },
+  "homepage": "https://github.com/franzunitn/football#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "fs": "0.0.1-security",
+    "path-posix": "^1.0.0",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6"
   }
 }
