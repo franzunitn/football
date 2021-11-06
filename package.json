@@ -1,0 +1,26 @@
+{
+  "name": "football",
+  "version": "1.0.0",
+  "description": "",
+  "main": "init_datasource.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://sfranchini: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@github.com/franzunitn/football.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/franzunitn/football/issues"
+  },
+  "homepage": "https://github.com/franzunitn/football#readme",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "path-posix": "^1.0.0",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6"
+  }
+}
