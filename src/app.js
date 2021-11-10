@@ -2,10 +2,11 @@ const repo = require('./db/dao/repository');
 const port = 3000;
 const express = require('express');
 const app = express();
-const bodyParser = require('body-parser');
 
-// support parsing of application/json type post data
-app.set(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({
+  extended: true
+}));
 
 /*
 
@@ -25,7 +26,7 @@ GET fantasyTeams/score //sum of the gol of your team or of a player
 //const team = {id:1, name:"Juve", players: ["1","2","3"]};
 //teamsId++;
 //teams.push(team);
-
+repo.createFantasyTeam('Juve');
 app.get('/', (req, res) => {
     res.send('Hello World, from football api');
 });
@@ -60,33 +61,34 @@ app.get('/players/role/:role', (req, res) => {
 
 //get all teams OK!
 app.get('/teams', (req, res) => {
-  res.send(JSON.stringify(teams));
+  var teams = repo.getFantasyTeams();
+  res.json(teams);
 });
 
 //get a team given the name
 //TODO: miglioriamo la visualizzazione magari mostrando la lista dei giocatori e il nome della squadra
-app.get('/teams/:teamName', (req, res) => {
-  res.send(JSON.stringify(teams.find(t => t.name === req.params.teamName)));
+app.get('/teams/:teamId', (req, res) => {
+  var id = req.params.teamId;
+  var team = repo.getFantasyTeamsId(id);
+  if (team != null){
+    res.json(team);
+  } else {
+    res.json('team not found');
+  }
+  
 });
 
 //create your team given the name of the team OK!
 app.post('/teams', (req, res) => {
-/*   const name_param = req.params.teamName;
-  const team = {id:teamsId, name:name_param};
-  teamsId++;
-  teams.push(team); */
-  console.log(req.body);
-  /* let fantasyTeam = repo.createFantasyTeam(req.params.teamName);
-  let json = JSON.stringify(fantasyTeam);
-  res.send(json); */
-  res.json(req.body);
+  var team = repo.createFantasyTeam(req.body.name);
+  res.json(team);
 });
 
 //add a player to a team 
-app.put('/teams/:teamName/player/:playerId', (req, res) => {
-  teams.find(t => t.name === req.params.teamName).players.push(parseInt(req.params.playerId));
-
-  res.send(JSON.stringify(teams.find(t => t.name === req.params.teamName)));
+app.put('/teams/:teamId', (req, res) => {
+  const player_id = parseInt(req.body.playerId);
+  var team = repo.insertPlayer(req.params.teamId, player_id);
+  res.json(team);
 });
 
 //delete a team 
