@@ -1,8 +1,12 @@
+const repo = require('./db/dao/repository');
+const port = 3000;
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
 
+// support parsing of application/json type post data
+app.set(bodyParser.json());
 
-const express = require('express')
-const app = express()
-const port = 3000
 /*
 
 GET     players || players&id=# || players&role= || players&id=#?gol=#
@@ -16,32 +20,40 @@ GET fantasyTeams //list of all your team
 GET fantasyTeams/score //sum of the gol of your team or of a player
 
 */
-var teams = [];
-var teamsId = 1;
+
 
 //const team = {id:1, name:"Juve", players: ["1","2","3"]};
 //teamsId++;
 //teams.push(team);
 
 app.get('/', (req, res) => {
-    res.send('Hello World, from express');
+    res.send('Hello World, from football api');
 });
 
 //get all players 
 app.get('/players', (req, res) => {
-  res.send('Hello World, from express');
+  var players = repo.getPlayers();
+  res.json(players);
 });
 
 //get a player with the ID
 app.get('/players/:playerId', (req, res) => {
   const player_id = parseInt(req.params.playerId);
-  //qua inseriremo nella risposta il player trovato
-  res.send('Hello World, from express');
+  var player = repo.getPlayersId(player_id);
+  res.json(player);
 });
 
 //get all the players giving the role 
-app.get('/players/:role', (req, res) => {
-  res.send('Hello World, from express');
+app.get('/players/role/:role', (req, res) => {
+  const role = req.params.role;
+  var players = repo.getPlayers();
+  var response = [];
+  for (var i = 0, l = players.list.length; i < l; i++) {
+    if (players.list[i]['statistic']['games']['position'] == role) {
+      response.push(players.list[i]);
+    }
+  }  
+  res.json(response);
 });
 
 //TEAMS
@@ -53,17 +65,21 @@ app.get('/teams', (req, res) => {
 
 //get a team given the name
 //TODO: miglioriamo la visualizzazione magari mostrando la lista dei giocatori e il nome della squadra
-app.get('/teams:teamName', (req, res) => {
+app.get('/teams/:teamName', (req, res) => {
   res.send(JSON.stringify(teams.find(t => t.name === req.params.teamName)));
 });
 
 //create your team given the name of the team OK!
-app.post('/teams/:teamName', (req, res) => {
-  const name_param = req.params.teamName;
+app.post('/teams', (req, res) => {
+/*   const name_param = req.params.teamName;
   const team = {id:teamsId, name:name_param};
   teamsId++;
-  teams.push(team);
-  res.send('Team added!');
+  teams.push(team); */
+  console.log(req.body);
+  /* let fantasyTeam = repo.createFantasyTeam(req.params.teamName);
+  let json = JSON.stringify(fantasyTeam);
+  res.send(json); */
+  res.json(req.body);
 });
 
 //add a player to a team 
