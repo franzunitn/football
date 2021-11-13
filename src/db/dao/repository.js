@@ -2,6 +2,7 @@
 const path = require('path');
 const fs = require('fs');
 const { pipeline } = require('stream');
+const { hasUncaughtExceptionCaptureCallback } = require('process');
 const players = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/data_source.json'), 'utf8'));
 
 var fantasyTeams = [];
@@ -47,15 +48,41 @@ exports.createFantasyTeam = function(name) {
 exports.insertPlayer = function(teamId, playerId) {
     var team = this.getFantasyTeamsId(teamId);
     var player = this.getPlayersId(playerId);
-    console.log(team);
-    console.log(player);
-    if (player != null && team != null){
+    if (player != null && team != null){                
         team.players.push(player);
         return team;
     }
     return null;
 }
 
-exports.deleteFantasyTeam = function (id) {
+exports.removePlayer = function(teamId, playerId) {
+    const team = this.getFantasyTeamsId(teamId); 
+    if (team == null) {
+        return null;
+    }
+    var player = null;   
+    for (var i = 0, l = team.players.length; i < l; i++){
+        if (team.players[i].id == playerId) {
+            player = team.players[i];
+            break;
+        }
+    }
+    const index = team.players.indexOf(player);
+    if (player != null && index > -1) {
+        team.players.splice(index, 1);
+        return player;
+    } else {
+        return null;
+    }    
+}
 
+exports.deleteFantasyTeam = function (teamId) {
+    const team = this.getFantasyTeamsId(teamId);    
+    const index = fantasyTeams.indexOf(team);
+    if (index > -1) {
+        fantasyTeams.splice(index, 1);
+        return team;
+    } else {
+        return null;
+    }    
 }

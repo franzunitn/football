@@ -8,28 +8,14 @@ app.use(express.urlencoded({
   extended: true
 }));
 
-/*
-
-GET     players || players&id=# || players&role= || players&id=#?gol=#
-
-POST    fanatasyTeams //create your own team
-PUT  fanatasyTeams //put a player in your own team
-DELETE fanatasyTeams //delete a team by id 
-DELETE fanatasyTeams //playerId and TeamId
-
-GET fantasyTeams //list of all your team
-GET fantasyTeams/score //sum of the gol of your team or of a player
-
-*/
-
-
-//const team = {id:1, name:"Juve", players: ["1","2","3"]};
-//teamsId++;
-//teams.push(team);
-repo.createFantasyTeam('Juve');
 app.get('/', (req, res) => {
-    res.send('Hello World, from football api');
+  var msg = {
+    message : "Hello World, from football api. I'm working!"
+  };  
+  res.json(msg);    
 });
+
+//PLAYERS
 
 //get all players 
 app.get('/players', (req, res) => {
@@ -41,7 +27,14 @@ app.get('/players', (req, res) => {
 app.get('/players/:playerId', (req, res) => {
   const player_id = parseInt(req.params.playerId);
   var player = repo.getPlayersId(player_id);
-  res.json(player);
+  if (player == null) {
+    var msg = {
+      message : "Player not found!"
+    };  
+    res.json(msg);
+  } else {
+    res.json(player);
+  }
 });
 
 //get all the players giving the role 
@@ -54,61 +47,125 @@ app.get('/players/role/:role', (req, res) => {
       response.push(players.list[i]);
     }
   }  
-  res.json(response);
+  if (response.length == 0) {
+    var msg = {
+      message : `There are no players with role '${role}'. Check the syntax correctness of the role specified`
+    };  
+    res.json(msg);
+  } else {
+    res.json(response);
+  }
 });
 
-//TEAMS
+//FANTASY TEAMS
 
-//get all teams OK!
+//get all teams
 app.get('/teams', (req, res) => {
   var teams = repo.getFantasyTeams();
-  res.json(teams);
+  if (teams.length == 0) {
+    var msg = {
+      message : "There are no teams. Create your own first!"
+    };    
+    res.json(msg);
+  }
+  else
+    res.json(teams);
 });
 
 //get a team given the name
-//TODO: miglioriamo la visualizzazione magari mostrando la lista dei giocatori e il nome della squadra
 app.get('/teams/:teamId', (req, res) => {
   var id = req.params.teamId;
   var team = repo.getFantasyTeamsId(id);
   if (team != null){
     res.json(team);
   } else {
-    res.json('team not found');
-  }
-  
+    var msg = {
+      message : "Team not found!"
+    };  
+    res.json(msg);
+  }  
 });
 
-//create your team given the name of the team OK!
+//Get gols done by team
+app.get('/teams/:teamId/gol', (req, res) => {
+  var id = req.params.teamId;
+  var team = repo.getFantasyTeamsId(id);
+  var gols = 0;
+  if (team != null){
+    for (var i = 0, l = team.players.length; i < l; i++){
+      if (team.players[i].statistic.goals.total != null) {
+          gols += team.players[i].statistic.goals.total          
+      }
+    }
+    var gols = {
+      gols : gols
+    }
+    res.json(gols);
+  } else {
+    var msg = {
+      message : "Team not found!"
+    };  
+    res.json(msg);
+  }  
+});
+
+//create your team given the name of the team
 app.post('/teams', (req, res) => {
   var team = repo.createFantasyTeam(req.body.name);
-  res.json(team);
+  res.json(team);  
 });
 
 //add a player to a team 
 app.put('/teams/:teamId', (req, res) => {
-  const player_id = parseInt(req.body.playerId);
-  var team = repo.insertPlayer(req.params.teamId, player_id);
-  res.json(team);
-});
+  const playerId = parseInt(req.body.playerId);
+  const teamId = req.params.teamId;
 
-//delete a team 
-app.delete('/teams/:teamName', (req, res) => {
-  var index = teams.indexOf(teams.find(t => t.name === req.params.teamName));
-  if (index != null){
-    teams.splice(index);
-    res.send(JSON.stringify(teams));
+  if (repo.getPlayersId(playerId) == null) {
+    var msg = {
+      message : `There are no player with id ${playerId}`
+    };  
+    res.json(msg);
+  } else if (repo.getFantasyTeamsId(teamId) == null) {
+    var msg = {
+      message : `There are no team with id '${teamId}'`
+    };  
+    res.json(msg);
   } else {
-    res.send('Error');
+    var team = repo.insertPlayer(req.params.teamId, playerId);
+    res.json(team);  
   }
 });
 
-//delete a player from a team 
-app.delete('/teams/:teamName/player/:playerId', (req, res) => {
-  res.send('Hello World, from express');
+//delete a team 
+app.delete('/teams/:teamId', (req, res) => {
+  const teamId = req.params.teamId;
+  var team = repo.deleteFantasyTeam(teamId);
+  if (team == null) {
+    var msg = {
+      message : `No team '${teamId}' found to delete in your fantasyTeams`
+    };  
+    res.json(msg);
+  } else {
+    res.json(team);
+  }  
 });
 
-
+//delete a player from a team 
+app.delete('/teams/:teamId/player/:playerId', (req, res) => {
+  const teamId = req.params.teamId;
+  const playerId = parseInt(req.params.playerId);
+  var player = repo.removePlayer(teamId, playerId);
+  if (player == null) {
+    var msg = {
+      message : `No playerId '${playerId}' found to delete in team '${teamId}'`
+    };  
+    res.json(msg);
+  } else {
+    res.json(player);
+  }  
+});
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
+
