@@ -42,10 +42,27 @@ app.get('/players/:playerId', (req, res) => {
   }
 });
 
-//EXERCISE 1: get players by role 
+//get players by role 
 app.get('/players/role/:role', (req, res) => {
-    var players = repo.getPlayers();
-    
+  const role = req.params.role;
+  var players = repo.getPlayers();
+  var response = [];
+  for (var i = 0, l = players.list.length; i < l; i++) {
+    if (players.list[i]['statistic']['games']['position'] == role) {
+      response.push(players.list[i]);
+    }
+  }  
+  if (response.length == 0) {
+    var msg = {
+      status: 404,
+      message : `There are no players with role '${role}'. Check the syntax correctness of the role specified`
+    };  
+    res.statusCode = 404;
+    res.json(msg);
+  } else {
+    res.statusCode = 200;
+    res.json(response);
+  }
 });
 
 //FANTASY TEAMS
@@ -64,14 +81,47 @@ app.get('/teams', (req, res) => {
     res.json(teams);
 });
 
-//EXERCISE 2: get team by id
+//get team by id
 app.get('/teams/:teamId', (req, res) => {
-
+  var id = req.params.teamId;
+  var team = repo.getFantasyTeamsId(id);
+  if (team != null){
+    res.statusCode = 200;
+    res.json(team);
+  } else {
+    var msg = {
+      status: 404,
+      message : `Team with id '${id}' not found!`
+    };  
+    res.statusCode = 404;
+    res.json(msg);
+  }  
 });
 
-//EXERCISE 3: Get gols done by team
+//Get gols done by team
 app.get('/teams/:teamId/gol', (req, res) => {
-
+  var id = req.params.teamId;
+  var team = repo.getFantasyTeamsId(id);
+  var gols = 0;
+  if (team != null){
+    for (var i = 0, l = team.players.length; i < l; i++){
+      if (team.players[i].statistic.goals.total != null) {
+          gols += team.players[i].statistic.goals.total          
+      }
+    }
+    var gols = {
+      gols : gols
+    }
+    res.statusCode = 200;
+    res.json(gols);
+  } else {
+    var msg = {
+      status: 404,
+      message : `Team with id '${id}' not found!`
+    };  
+    res.statusCode = 404;
+    res.json(msg);
+  }  
 });
 
 //create your team given the name of the team
@@ -123,11 +173,23 @@ app.delete('/teams/:teamId', (req, res) => {
   }  
 });
 
-//EXERCISE 4: delete a player from team 
+//delete a player from team 
 app.delete('/teams/:teamId/player/:playerId', (req, res) => {
-
+  const teamId = req.params.teamId;
+  const playerId = parseInt(req.params.playerId);
+  var player = repo.removePlayer(teamId, playerId);
+  if (player == null) {
+    var msg = {
+      status: 404,
+      message : `No playerId '${playerId}' found to delete in team '${teamId}'`
+    };  
+    res.statusCode = 404;
+    res.json(msg);
+  } else {
+    res.statusCode = 200;
+    res.json(player);
+  }  
 });
-
 
 //invalid route handling (Must be as last call endpoint!)
 app.all('*', function (req, res) {
