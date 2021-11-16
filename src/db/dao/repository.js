@@ -48,7 +48,14 @@ exports.createFantasyTeam = function(name) {
 exports.insertPlayer = function(teamId, playerId) {
     var team = this.getFantasyTeamsId(teamId);
     var player = this.getPlayersId(playerId);
-    if (player != null && team != null){                
+    //check if is already in the team 
+    for (var i = 0, l = team.players.length; i < l; i++){
+        if (team.players[i].id == playerId) {
+            return team;
+        }
+    }
+
+    if (player != null && team != null && team){                
         team.players.push(player);
         return team;
     }
